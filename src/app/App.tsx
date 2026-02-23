@@ -125,7 +125,7 @@ export default function App() {
         </div>
 
         {/* Demo Notice */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-xs text-blue-900 text-center">
             <strong>Demo Mode:</strong> This frontend demo uses mock stock
             prices and exchange rates. In production, this would integrate with
@@ -133,7 +133,7 @@ export default function App() {
             <code className="bg-blue-100 px-1 rounded">/api/calculate</code>
             to fetch real historical closing prices and currency exchange rates.
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
