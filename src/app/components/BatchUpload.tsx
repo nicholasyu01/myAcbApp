@@ -70,6 +70,20 @@ export function BatchUpload() {
     }
   };
 
+  const downloadTemplate = () => {
+    const lines = ["AAPL,2", "MSFT,1", "GOOG,0.5"];
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "template.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const fmtCurrency = (n: number) =>
     new Intl.NumberFormat("en-CA", {
       style: "currency",
@@ -80,6 +94,19 @@ export function BatchUpload() {
   return (
     <div className="bg-white rounded-lg p-4 border border-slate-200">
       <h2 className="text-lg font-semibold mb-3">Batch CSV Upload</h2>
+
+      <div className="flex items-center justify-between mb-3">
+        <button
+          type="button"
+          onClick={downloadTemplate}
+          className="text-sm bg-slate-100 border border-slate-200 px-3 py-1 rounded-md hover:bg-slate-200"
+        >
+          Download CSV Template
+        </button>
+        <p className="text-xs text-slate-500">
+          Template: `ticker,shares` per line
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className=" space-y-3">
         <div className="w-full">
