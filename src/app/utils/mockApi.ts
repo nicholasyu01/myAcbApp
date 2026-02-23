@@ -28,13 +28,13 @@ export async function calculateCostBasis(
   const tickerUpper = ticker.toUpperCase().trim();
 
   // Adjust weekend dates to previous weekday (keeps previous behaviour)
-  const date = new Date(arrivalDate);
-  const adjustedDate = adjustToWeekday(date);
-  const arrivalForApi = formatDateForApi(adjustedDate);
+  // const date = new Date(arrivalDate);
+  // const adjustedDate = adjustToWeekday(date);
+  // const arrivalForApi = formatDateForApi(adjustedDate);
 
   const payload = {
     ticker: tickerUpper,
-    arrivalDate: arrivalForApi,
+    arrivalDate: arrivalDate,
     shares,
   };
 
@@ -61,8 +61,9 @@ export async function calculateCostBasis(
     throw new Error("Invalid response from ACB API");
   }
 
-  const pricingDateRaw = data.tradedDate || data.arrivalDate || arrivalForApi;
-  const pricingDateUsed = formatDateForDisplay(new Date(pricingDateRaw));
+  const pricingDateRaw = data.tradedDate || data.arrivalDate;
+  const pricingDateUsed = formatDateForDisplay(pricingDateRaw);
+  // const pricingDateUsed = formatDateForDisplay(new Date(pricingDateRaw));
 
   const result: CalculationResult = {
     ticker: data.ticker || tickerUpper,
