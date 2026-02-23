@@ -1,6 +1,6 @@
-import { AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
+import { AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
 
 interface ErrorMessageProps {
   error: string;
@@ -18,7 +18,11 @@ export function ErrorMessage({ error, onReset }: ErrorMessageProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-red-800">{error}</p>
-        <Button onClick={onReset} variant="outline" className="w-full">
+        <Button
+          onClick={onReset}
+          variant="outline"
+          className="hover:cursor-pointer w-full"
+        >
           Try Again
         </Button>
       </CardContent>

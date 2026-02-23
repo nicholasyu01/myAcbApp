@@ -96,7 +96,7 @@ export default function App() {
         {state === "success" && result && (
           <div className="space-y-4">
             <ResultsCard result={result} />
-            <div className="flex justify-center">
+            <div className="hover:cursor-pointer flex justify-center">
               <button
                 onClick={handleReset}
                 className="text-sm text-slate-600 hover:text-slate-900 underline"
