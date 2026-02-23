@@ -1,89 +1,78 @@
-import { CalculationResult, ApiError } from '../types/calculator';
-import { adjustToWeekday, formatDateForApi, formatDateForDisplay } from './dateUtils';
+import { CalculationResult } from "../types/calculator";
+import {
+  adjustToWeekday,
+  formatDateForApi,
+  formatDateForDisplay,
+} from "./dateUtils";
 
 /**
- * Mock stock price data
- * In production, this would call Yahoo Finance API
- */
-const MOCK_STOCK_DATA: Record<string, { price: number; currency: string }> = {
-  'AAPL': { price: 178.25, currency: 'USD' },
-  'GOOGL': { price: 142.50, currency: 'USD' },
-  'MSFT': { price: 415.30, currency: 'USD' },
-  'TSLA': { price: 195.75, currency: 'USD' },
-  'SHOP': { price: 65.80, currency: 'CAD' },
-  'TD': { price: 74.25, currency: 'CAD' },
-  'RY': { price: 125.40, currency: 'CAD' },
-  'BMO': { price: 112.15, currency: 'CAD' },
-};
-
-/**
- * Mock USD/CAD exchange rate
- * In production, this would fetch from a forex API
- */
-const MOCK_USD_CAD_RATE = 1.38;
-
-/**
- * Simulates API delay
- */
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * Mock API call to calculate cost basis
- * In production, this would be a server-side endpoint that:
- * 1. Validates inputs
- * 2. Adjusts date if weekend
- * 3. Fetches historical closing price from Yahoo Finance
- * 4. Fetches USD/CAD rate if needed
- * 5. Returns calculation results
+ * calculateCostBasis now calls the ACB server to retrieve adjusted close and cost basis.
+ * Endpoint: POST https://myacbserver.onrender.com/price
+ * Payload: { ticker, arrivalDate, shares }
+ * Expected response includes: adjustedClose, adjustedCostBasis, tradedDate, etc.
  */
 export async function calculateCostBasis(
   ticker: string,
   shares: number,
-  arrivalDate: string
+  arrivalDate: string,
 ): Promise<CalculationResult> {
-  // Simulate network delay
-  await delay(1000);
-
-  // Validate inputs
+  // Basic validation
   if (!ticker || ticker.trim().length === 0) {
-    throw new Error('Invalid ticker symbol');
+    throw new Error("Invalid ticker symbol");
   }
 
   if (shares <= 0) {
-    throw new Error('Number of shares must be greater than 0');
+    throw new Error("Number of shares must be greater than 0");
   }
 
   const tickerUpper = ticker.toUpperCase().trim();
-  
-  // Check if we have mock data for this ticker
-  const stockData = MOCK_STOCK_DATA[tickerUpper];
-  if (!stockData) {
-    throw new Error(`No historical data found for ticker ${tickerUpper}. In production, this would fetch from Yahoo Finance.`);
-  }
 
-  // Adjust date if weekend
+  // Adjust weekend dates to previous weekday (keeps previous behaviour)
   const date = new Date(arrivalDate);
   const adjustedDate = adjustToWeekday(date);
-  const pricingDateUsed = formatDateForDisplay(adjustedDate);
+  const arrivalForApi = formatDateForApi(adjustedDate);
 
-  // Calculate total value in original currency
-  const totalValue = stockData.price * shares;
-
-  // Prepare result
-  const result: CalculationResult = {
+  const payload = {
     ticker: tickerUpper,
-    pricingDateUsed,
-    closingPrice: stockData.price,
+    arrivalDate: arrivalForApi,
     shares,
-    totalValue,
-    currency: stockData.currency,
   };
 
-  // If USD stock, add CAD conversion
-  if (stockData.currency === 'USD') {
-    result.cadTotalValue = totalValue * MOCK_USD_CAD_RATE;
-    result.usdCadRate = MOCK_USD_CAD_RATE;
+  const resp = await fetch("https://myacbserver.onrender.com/price", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => resp.statusText);
+    throw new Error(`ACB API error ${resp.status}: ${text}`);
   }
+
+  const data = await resp.json().catch(() => null);
+
+  if (
+    !data ||
+    typeof data.adjustedClose !== "number" ||
+    typeof data.adjustedCostBasis !== "number"
+  ) {
+    throw new Error("Invalid response from ACB API");
+  }
+
+  const pricingDateRaw = data.tradedDate || data.arrivalDate || arrivalForApi;
+  const pricingDateUsed = formatDateForDisplay(new Date(pricingDateRaw));
+
+  const result: CalculationResult = {
+    ticker: data.ticker || tickerUpper,
+    pricingDateUsed,
+    closingPrice: data.adjustedClose,
+    shares: typeof data.shares === "number" ? data.shares : shares,
+    totalValue: data.adjustedCostBasis,
+    // Server doesn't currently return currency in example; default to USD
+    currency: (data.currency as string) || "USD",
+  };
 
   return result;
 }
