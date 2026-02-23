@@ -5,7 +5,7 @@ interface BatchEntry {
   ticker: string;
   shares: number;
   tradedDate: string;
-  adjustedClose: number;
+  close: number;
   adjustedCostBasis: number;
   provider?: string;
 }
@@ -156,7 +156,7 @@ export function BatchUpload() {
                   <td className="px-2 py-2 font-medium">{r.ticker}</td>
                   <td className="px-2 py-2">{r.shares}</td>
                   <td className="px-2 py-2">{r.tradedDate}</td>
-                  <td className="px-2 py-2">{fmtCurrency(r.adjustedClose)}</td>
+                  <td className="px-2 py-2">{fmtCurrency(r.close)}</td>
                   <td className="px-2 py-2">
                     {fmtCurrency(r.adjustedCostBasis)}
                   </td>

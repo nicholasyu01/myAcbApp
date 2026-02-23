@@ -9,7 +9,7 @@ import {
  * calculateCostBasis now calls the ACB server to retrieve adjusted close and cost basis.
  * Endpoint: POST https://myacbserver.onrender.com/price
  * Payload: { ticker, arrivalDate, shares }
- * Expected response includes: adjustedClose, adjustedCostBasis, tradedDate, etc.
+ * Expected response includes: close, adjustedCostBasis, tradedDate, etc.
  */
 export async function calculateCostBasis(
   ticker: string,
@@ -55,7 +55,7 @@ export async function calculateCostBasis(
 
   if (
     !data ||
-    typeof data.adjustedClose !== "number" ||
+    typeof data.close !== "number" ||
     typeof data.adjustedCostBasis !== "number"
   ) {
     throw new Error("Invalid response from ACB API");
@@ -68,7 +68,7 @@ export async function calculateCostBasis(
   const result: CalculationResult = {
     ticker: data.ticker || tickerUpper,
     pricingDateUsed,
-    closingPrice: data.adjustedClose,
+    closingPrice: data.close,
     shares: typeof data.shares === "number" ? data.shares : shares,
     totalValue: data.adjustedCostBasis,
     // Server doesn't currently return currency in example; default to USD
