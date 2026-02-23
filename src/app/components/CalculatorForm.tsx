@@ -67,7 +67,7 @@ export function CalculatorForm({ onSubmit, isLoading }: CalculatorFormProps) {
               className="uppercase"
             />
             <p className="text-sm text-slate-500">
-              Try: AAPL, GOOGL, MSFT, TSLA (USD) or SHOP, TD, RY, BMO (CAD)
+              Try: AAPL, GOOGL, MSFT, TSLA
             </p>
           </div>
 
